@@ -11,6 +11,7 @@
     "project": "./tsconfig.json"
   },
   "rules": {
-    "@typescript-eslint/no-floating-promises": "off"
+    "@typescript-eslint/no-floating-promises": "off",
+    "@typescript-eslint/no-unnecessary-boolean-literal-compare": "off"
   }
 }

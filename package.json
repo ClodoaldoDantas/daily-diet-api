@@ -10,9 +10,12 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "fastify": "^4.17.0"
+    "dotenv": "^16.0.3",
+    "fastify": "^4.17.0",
+    "zod": "^3.21.4"
   },
   "devDependencies": {
+    "@types/node": "^20.1.0",
     "@typescript-eslint/eslint-plugin": "^5.59.2",
     "eslint": "^8.40.0",
     "eslint-config-prettier": "^8.8.0",

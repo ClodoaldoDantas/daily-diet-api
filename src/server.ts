@@ -1,4 +1,5 @@
 import { app } from './app'
+import { env } from './env'
 
 app.get('/', (request, reply) => {
   return reply.status(200).send({ message: 'Hello World 🚀' })
@@ -6,7 +7,7 @@ app.get('/', (request, reply) => {
 
 app
   .listen({
-    port: 3333,
+    port: env.PORT,
   })
   .then(() => {
     console.log('server running 🔥')
