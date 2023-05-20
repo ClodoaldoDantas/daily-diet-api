@@ -111,4 +111,16 @@ export async function mealsRoutes(app: FastifyInstance) {
 
     return reply.status(204).send()
   })
+
+  app.get('/', async (request, reply) => {
+    const user_id = String(request.headers.user_id)
+
+    const meals = await prisma.meal.findMany({
+      where: {
+        user_id,
+      },
+    })
+
+    return { meals }
+  })
 }
