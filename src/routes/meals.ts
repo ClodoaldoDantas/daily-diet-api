@@ -123,4 +123,26 @@ export async function mealsRoutes(app: FastifyInstance) {
 
     return { meals }
   })
+
+  app.get('/:id', async (request, reply) => {
+    const user_id = String(request.headers.user_id)
+    const getMealParamsSchema = z.object({
+      id: z.string().uuid(),
+    })
+
+    const params = getMealParamsSchema.parse(request.params)
+
+    const meal = await prisma.meal.findFirst({
+      where: {
+        user_id,
+        id: params.id,
+      },
+    })
+
+    if (!meal) {
+      return reply.status(404).send()
+    }
+
+    return { meal }
+  })
 }
