@@ -1,10 +1,12 @@
 import { type FastifyInstance } from 'fastify'
-import { checkUserIdExists } from '../middlewares/check-user-id-exists'
 import { z } from 'zod'
+import { checkUserIdExists } from '../middlewares/check-user-id-exists'
 import { prisma } from '../lib/prisma'
 
 export async function mealsRoutes(app: FastifyInstance) {
-  app.post('/', { preHandler: [checkUserIdExists] }, async (request, reply) => {
+  app.addHook('preHandler', checkUserIdExists)
+
+  app.post('/', async (request, reply) => {
     const user_id = String(request.headers.user_id)
 
     const createMealBodySchema = z.object({
@@ -30,54 +32,83 @@ export async function mealsRoutes(app: FastifyInstance) {
     return reply.status(201).send()
   })
 
-  app.put(
-    '/:id',
-    { preHandler: [checkUserIdExists] },
-    async (request, reply) => {
-      const user_id = String(request.headers.user_id)
+  app.put('/:id', async (request, reply) => {
+    const user_id = String(request.headers.user_id)
 
-      const updateMealParamsSchema = z.object({
-        id: z.string().uuid(),
-      })
+    const updateMealParamsSchema = z.object({
+      id: z.string().uuid(),
+    })
 
-      const params = updateMealParamsSchema.parse(request.params)
+    const params = updateMealParamsSchema.parse(request.params)
 
-      const meal = await prisma.meal.findFirst({
-        where: {
-          id: params.id,
-          user_id,
-        },
-      })
+    const meal = await prisma.meal.findFirst({
+      select: {
+        id: true,
+      },
+      where: {
+        id: params.id,
+        user_id,
+      },
+    })
 
-      if (!meal) {
-        return reply
-          .status(401)
-          .send({ message: 'Meal not found for this user' })
-      }
+    if (!meal) {
+      return reply.status(403).send()
+    }
 
-      const updateMealBodySchema = z.object({
-        name: z.string(),
-        description: z.string(),
-        created_at: z.string(),
-        in_diet: z.boolean(),
-      })
+    const updateMealBodySchema = z.object({
+      name: z.string(),
+      description: z.string(),
+      created_at: z.string(),
+      in_diet: z.boolean(),
+    })
 
-      const { name, description, created_at, in_diet } =
-        updateMealBodySchema.parse(request.body)
+    const { name, description, created_at, in_diet } =
+      updateMealBodySchema.parse(request.body)
 
-      await prisma.meal.update({
-        data: {
-          name,
-          description,
-          created_at: new Date(created_at),
-          in_diet,
-        },
-        where: {
-          id: params.id,
-        },
-      })
+    await prisma.meal.update({
+      data: {
+        name,
+        description,
+        created_at: new Date(created_at),
+        in_diet,
+      },
+      where: {
+        id: params.id,
+      },
+    })
 
-      return reply.status(204).send()
-    },
-  )
+    return reply.status(204).send()
+  })
+
+  app.delete('/:id', async (request, reply) => {
+    const user_id = String(request.headers.user_id)
+
+    const deleteMealParamsSchema = z.object({
+      id: z.string().uuid(),
+    })
+
+    const params = deleteMealParamsSchema.parse(request.params)
+
+    const meal = await prisma.meal.findFirst({
+      select: {
+        id: true,
+      },
+      where: {
+        id: params.id,
+        user_id,
+      },
+    })
+
+    if (!meal) {
+      return reply.status(403).send()
+    }
+
+    await prisma.meal.delete({
+      where: {
+        id: params.id,
+      },
+    })
+
+    return reply.status(204).send()
+  })
 }
