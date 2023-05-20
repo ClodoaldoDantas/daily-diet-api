@@ -124,6 +124,30 @@ export async function mealsRoutes(app: FastifyInstance) {
     return { meals }
   })
 
+  app.get('/summary', async (request, reply) => {
+    const user_id = String(request.headers.user_id)
+
+    const meals_in_diet = await prisma.meal.count({
+      where: {
+        user_id,
+        in_diet: true,
+      },
+    })
+
+    const meals_out_diet = await prisma.meal.count({
+      where: {
+        user_id,
+        in_diet: false,
+      },
+    })
+
+    return {
+      meals_in_diet,
+      meals_out_diet,
+      total: meals_in_diet + meals_out_diet,
+    }
+  })
+
   app.get('/:id', async (request, reply) => {
     const user_id = String(request.headers.user_id)
     const getMealParamsSchema = z.object({
